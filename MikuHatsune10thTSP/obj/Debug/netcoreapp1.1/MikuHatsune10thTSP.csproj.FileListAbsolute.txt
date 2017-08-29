@@ -1,0 +1,9 @@
+c:\users\tomo8\documents\visual studio 2017\Projects\MikuHatsune10thTSP\MikuHatsune10thTSP\bin\Debug\netcoreapp1.1\MikuHatsune10thTSP.deps.json
+c:\users\tomo8\documents\visual studio 2017\Projects\MikuHatsune10thTSP\MikuHatsune10thTSP\bin\Debug\netcoreapp1.1\MikuHatsune10thTSP.runtimeconfig.json
+c:\users\tomo8\documents\visual studio 2017\Projects\MikuHatsune10thTSP\MikuHatsune10thTSP\bin\Debug\netcoreapp1.1\MikuHatsune10thTSP.runtimeconfig.dev.json
+c:\users\tomo8\documents\visual studio 2017\Projects\MikuHatsune10thTSP\MikuHatsune10thTSP\bin\Debug\netcoreapp1.1\MikuHatsune10thTSP.dll
+c:\users\tomo8\documents\visual studio 2017\Projects\MikuHatsune10thTSP\MikuHatsune10thTSP\bin\Debug\netcoreapp1.1\MikuHatsune10thTSP.pdb
+c:\users\tomo8\documents\visual studio 2017\Projects\MikuHatsune10thTSP\MikuHatsune10thTSP\obj\Debug\netcoreapp1.1\MikuHatsune10thTSP.csprojResolveAssemblyReference.cache
+c:\users\tomo8\documents\visual studio 2017\Projects\MikuHatsune10thTSP\MikuHatsune10thTSP\obj\Debug\netcoreapp1.1\MikuHatsune10thTSP.AssemblyInfo.cs
+c:\users\tomo8\documents\visual studio 2017\Projects\MikuHatsune10thTSP\MikuHatsune10thTSP\obj\Debug\netcoreapp1.1\MikuHatsune10thTSP.dll
+c:\users\tomo8\documents\visual studio 2017\Projects\MikuHatsune10thTSP\MikuHatsune10thTSP\obj\Debug\netcoreapp1.1\MikuHatsune10thTSP.pdb
