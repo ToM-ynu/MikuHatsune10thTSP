@@ -15,18 +15,14 @@ namespace MikuHatsune10thTSP
             //load finish 
             const int individualNumber = 20;
             //make population population has 20 individuals.
-            var population = new int[20][];
-            for (int i = 0; i < population.GetLength(0); i++)
-            {
-                population[i] = new int[data.Count];
-            }
+
             var fitness = new Pair<int, double>[individualNumber];
             for (int i = 0; i < fitness.Length; i++)
             {
-                fitness[i] = new Pair<int, double>(i, 0.0);
+                fitness[i] = new Pair<int, double>();
             }
             Random rand = new Random();
-            GeneticAlgorithm.Initialize(population, data.Count, rand);
+            var population = GeneticAlgorithm.Initialize(data.Count, rand);
 
 
             for (int i = 0; i < 1000000; i++)

@@ -9,19 +9,20 @@ namespace MikuHatsune10thTSP
 {
     static class GeneticAlgorithm
     {
-        public static void Initialize(int[][] data, int number, Random rand)
+        public static int[][] Initialize(int number, Random rand)
         {
+            int[][] data = new int[20][];
             for (int i = 0; i < data.GetLength(0); i++)
             {
-                var array = new int[number];
+                data[i] = new int[number];
                 for (int j = 0; j < number; j++)
                 {
-                    array[j] = (j + 1);
+                    data[i][j] = j + 1;
                 }
 
-                FisherYatesshuffle(array, rand);
-                array.CopyTo(data[i], 0);
+                FisherYatesshuffle(data[i], rand);
             }
+            return data;
         }
 
         public static Pair<int[], int[]> Crossover(int[] parent1, int[] parent2, double CrossoverRate, Random rand)
@@ -84,25 +85,31 @@ namespace MikuHatsune10thTSP
             population[parents.First].CopyTo(parent1, 0);
             var parent2 = new int[population[parents.Second].Length];
             population[parents.Second].CopyTo(parent2, 0);
-            var ans = new Queue<int[]>();
+            var ans = new int[20][];
             //elite保存　2件
+            ans[0] = new int[population[0].Length];
+            ans[population.GetLength(0) / 2] = new int[population[1].Length];
             for (int i = 0; i < population[0].Length; i++)
             {
-                population[0] = population[fitness[0].First];
-                population[1] = population[fitness[1].First];
+
+                ans[0][i] = population[fitness[0].First][i];
+                ans[population.GetLength(0) / 2][i] = population[fitness[1].First][i];
             }
             for (int i = 1; i < population.GetLength(0) / 2; i++)
             {
                 var children = Crossover(parent1, parent2, CrossoverRate, rand);
                 Mutation(children.First, mutationNum, rand);
                 Mutation(children.Second, mutationNum, rand);
+
+                ans[i] = new int[population[0].Length];
+                ans[i + population.GetLength(0) / 2] = new int[population[0].Length];
                 for (int j = 0; j < population[0].Length; j++)
                 {
-                    population[i][j] = children.First[j];
-                    population[i + population.GetLength(0) / 2][j] = children.First[j];
+                    ans[i][j] = children.First[j];
+                    ans[i + population.GetLength(0) / 2][j] = children.Second[j];
                 }
             }
-            return population;
+            return ans;
         }
         private static Pair<int, int> ChooseParents(Pair<int, double>[] fitness, Random rand)
         {

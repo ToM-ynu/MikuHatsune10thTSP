@@ -16,3 +16,4 @@ C:\Users\tomo8\Documents\Git\MikuHatsune10thTSP\MikuHatsune10thTSP\obj\Debug\net
 C:\Users\tomo8\Documents\Git\MikuHatsune10thTSP\MikuHatsune10thTSP\obj\Debug\netcoreapp1.1\MikuHatsune10thTSP.AssemblyInfo.cs
 C:\Users\tomo8\Documents\Git\MikuHatsune10thTSP\MikuHatsune10thTSP\obj\Debug\netcoreapp1.1\MikuHatsune10thTSP.dll
 C:\Users\tomo8\Documents\Git\MikuHatsune10thTSP\MikuHatsune10thTSP\obj\Debug\netcoreapp1.1\MikuHatsune10thTSP.pdb
+C:\Users\tomo8\Documents\Git\MikuHatsune10thTSP\MikuHatsune10thTSP\obj\Debug\netcoreapp1.1\MikuHatsune10thTSP.csproj.CoreCompileInputs.cache
