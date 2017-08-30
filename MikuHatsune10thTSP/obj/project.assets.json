@@ -7042,10 +7042,10 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\users\\tomo8\\documents\\visual studio 2017\\Projects\\MikuHatsune10thTSP\\MikuHatsune10thTSP\\MikuHatsune10thTSP.csproj",
+      "projectUniqueName": "C:\\Users\\tomo8\\Documents\\Git\\MikuHatsune10thTSP\\MikuHatsune10thTSP\\MikuHatsune10thTSP.csproj",
       "projectName": "MikuHatsune10thTSP",
-      "projectPath": "c:\\users\\tomo8\\documents\\visual studio 2017\\Projects\\MikuHatsune10thTSP\\MikuHatsune10thTSP\\MikuHatsune10thTSP.csproj",
-      "outputPath": "c:\\users\\tomo8\\documents\\visual studio 2017\\Projects\\MikuHatsune10thTSP\\MikuHatsune10thTSP\\obj\\",
+      "projectPath": "C:\\Users\\tomo8\\Documents\\Git\\MikuHatsune10thTSP\\MikuHatsune10thTSP\\MikuHatsune10thTSP.csproj",
+      "outputPath": "C:\\Users\\tomo8\\Documents\\Git\\MikuHatsune10thTSP\\MikuHatsune10thTSP\\obj\\",
       "projectStyle": "PackageReference",
       "originalTargetFrameworks": [
         "netcoreapp1.1"

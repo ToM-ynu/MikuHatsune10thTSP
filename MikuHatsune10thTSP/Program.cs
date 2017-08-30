@@ -8,14 +8,42 @@ namespace MikuHatsune10thTSP
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            //load data
             var filename = "ja9847.txt";
             if (args.Length != 0) filename = args[0];
             var data = Read(filename);
-            foreach (var item in data)
+            //load finish 
+            const int individualNumber = 20;
+            //make population population has 20 individuals.
+            var population = new int[20][];
+            for (int i = 0; i < population.GetLength(0); i++)
             {
-                item.WriteLine();
+                population[i] = new int[data.Count];
             }
+            var fitness = new Pair<int, double>[individualNumber];
+            for (int i = 0; i < fitness.Length; i++)
+            {
+                fitness[i] = new Pair<int, double>(i, 0.0);
+            }
+            Random rand = new Random();
+            GeneticAlgorithm.Initialize(population, data.Count, rand);
+
+
+            for (int i = 0; i < 1000000; i++)
+            {
+                CalcFitness.Calc(fitness, population, data);
+                population = GeneticAlgorithm.MakeChildren(population, fitness, rand);
+                if (i % 1000 == 0)
+                {
+                    for (int j = 0; j < fitness.Length / 3; j++)
+                    {
+                        Console.Write("{0}:{1:e2}\t", fitness[j].First, fitness[j].Second);
+                    }
+                    Console.WriteLine();
+                }
+            }
+
+
         }
 
         static List<City> Read(string filename)
@@ -27,7 +55,7 @@ namespace MikuHatsune10thTSP
             {
                 string temp;
 
-                for (int i = 0; i < 8; i++)
+                for (int i = 0; i < 7; i++)
                 {
                     reader.ReadLine();
                 }
@@ -86,5 +114,10 @@ namespace MikuHatsune10thTSP
 
         public T First { get => first; set => first = value; }
         public U Second { get => second; set => second = value; }
+
+        internal object Clone()
+        {
+            return MemberwiseClone();
+        }
     }
 }
