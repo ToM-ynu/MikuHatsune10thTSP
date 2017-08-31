@@ -9,7 +9,7 @@ namespace MikuHatsune10thTSP
         static void Main(string[] args)
         {
             //load data
-            var filename = "ja9847.txt";
+            var filename = "lu980.txt";
             if (args.Length != 0) filename = args[0];
             var data = Read(filename);
             //load finish 
@@ -24,11 +24,16 @@ namespace MikuHatsune10thTSP
             Random rand = new Random();
             var population = GeneticAlgorithm.Initialize(data.Count, rand);
 
-
+            Random[] paraRandom = new Random[10];
+            var temp = Environment.TickCount;
+            for (int i = 0; i < paraRandom.Length; i++)
+            {
+                paraRandom[i] = new Random(temp++);
+            }
             for (int i = 0; i < 1000000; i++)
             {
                 CalcFitness.Calc(fitness, population, data);
-                population = GeneticAlgorithm.MakeChildren(population, fitness, rand);
+                population = GeneticAlgorithm.MakeChildren(population, fitness, paraRandom);
                 if (i % 1000 == 0)
                 {
                     for (int j = 0; j < fitness.Length / 3; j++)
