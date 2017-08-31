@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace MikuHatsune10thTSP
 {
@@ -76,11 +77,11 @@ namespace MikuHatsune10thTSP
             }
 
         }
-        public static int[][] MakeChildren(int[][] population, Pair<int, double>[] fitness, Random rand)
+        public static int[][] MakeChildren(int[][] population, Pair<int, double>[] fitness, Random[] rand)
         {
             var CrossoverRate = 0.7;//Child is 70% its parent
             var mutationNum = 0.01; //mutation is happen @ 1%
-            var parents = ChooseParents(fitness, rand);
+            var parents = ChooseParents(fitness, rand[0]);
             var parent1 = new int[population[parents.First].Length];
             population[parents.First].CopyTo(parent1, 0);
             var parent2 = new int[population[parents.Second].Length];
@@ -95,11 +96,12 @@ namespace MikuHatsune10thTSP
                 ans[0][i] = population[fitness[0].First][i];
                 ans[population.GetLength(0) / 2][i] = population[fitness[1].First][i];
             }
-            for (int i = 1; i < population.GetLength(0) / 2; i++)
+
+            Parallel.For(1, population.GetLength(0) / 2, i =>
             {
-                var children = Crossover(parent1, parent2, CrossoverRate, rand);
-                Mutation(children.First, mutationNum, rand);
-                Mutation(children.Second, mutationNum, rand);
+                var children = Crossover(parent1, parent2, CrossoverRate, rand[i]);
+                Mutation(children.First, mutationNum, rand[i]);
+                Mutation(children.Second, mutationNum, rand[i]);
 
                 ans[i] = new int[population[0].Length];
                 ans[i + population.GetLength(0) / 2] = new int[population[0].Length];
@@ -108,6 +110,10 @@ namespace MikuHatsune10thTSP
                     ans[i][j] = children.First[j];
                     ans[i + population.GetLength(0) / 2][j] = children.Second[j];
                 }
+            });
+            for (int i = 1; i < population.GetLength(0) / 2; i++)
+            {
+
             }
             return ans;
         }
