@@ -9,7 +9,7 @@ namespace MikuHatsune10thTSP
         static void Main(string[] args)
         {
             //load data
-            var filename = "lu980.txt";
+            var filename = "lu980.tsp";
             if (args.Length != 0) filename = args[0];
             var data = Read(filename);
             //load finish 
@@ -30,10 +30,13 @@ namespace MikuHatsune10thTSP
             {
                 paraRandom[i] = new Random(temp++);
             }
+
+            var crossoverRate = 0.4;//Child is 70% its parent
+            var mutationNum = 0.05; //mutation is happen @ 1%
             for (int i = 0; i < 1000000; i++)
             {
                 CalcFitness.Calc(fitness, population, data);
-                population = GeneticAlgorithm.MakeChildren(population, fitness, paraRandom);
+                GeneticAlgorithm.MakeChildren(population, fitness, paraRandom, crossoverRate, mutationNum);
                 if (i % 1000 == 0)
                 {
                     for (int j = 0; j < fitness.Length / 3; j++)
