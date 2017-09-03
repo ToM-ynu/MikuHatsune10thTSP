@@ -117,6 +117,7 @@ namespace MikuHatsune10thTSP
                     emptyQueue.Enqueue(i);
             }
             var syncObject = new Object();
+#if false
 
             for (int i = 1; i < population.GetLength(0) / 2; i++)
             {
@@ -137,7 +138,7 @@ namespace MikuHatsune10thTSP
                     population[child2][j] = children.Second[j];
                 }
             }
-#if false
+#else
             Parallel.For(1, population.GetLength(0) / 2, i =>
             {
                 int child1, child2;
