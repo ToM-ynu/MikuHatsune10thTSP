@@ -9,7 +9,7 @@ namespace MikuHatsune10thTSP
         static void Main(string[] args)
         {
             //load data
-            var filename = "lu980.txt";
+            var filename = "qa194.tsp";
             if (args.Length != 0) filename = args[0];
             var data = Read(filename);
             //load finish 
@@ -23,24 +23,33 @@ namespace MikuHatsune10thTSP
             }
             Random rand = new Random();
             var population = GeneticAlgorithm.Initialize(data.Count, rand);
-
             Random[] paraRandom = new Random[10];
             var temp = Environment.TickCount;
             for (int i = 0; i < paraRandom.Length; i++)
             {
                 paraRandom[i] = new Random(temp++);
             }
-            for (int i = 0; i < 1000000; i++)
+
+            var draw = new Draw(data);
+            draw.DrawMap(data, population[0]);
+            var crossoverRate = 0.4;//Child is 70% its parent
+            var mutationNum = 0.05; //mutation is happen @ 1%
+
+            for (int i = 0; i < 1_000_000; i++)
             {
                 CalcFitness.Calc(fitness, population, data);
-                population = GeneticAlgorithm.MakeChildren(population, fitness, paraRandom);
-                if (i % 1000 == 0)
+                GeneticAlgorithm.MakeChildren(population, fitness, paraRandom, crossoverRate, mutationNum);
+                if (i % 1_000 == 0)
                 {
                     for (int j = 0; j < fitness.Length / 3; j++)
                     {
                         Console.Write("{0}:{1:e2}\t", fitness[j].First, fitness[j].Second);
                     }
                     Console.WriteLine();
+                }
+                if (i % 100_000 == 0)
+                {
+                    draw.DrawMap(data, population[0]);
                 }
             }
 
@@ -81,7 +90,7 @@ namespace MikuHatsune10thTSP
         public double XAxis { get => xAxis; set => xAxis = value; }
         public double YAxis { get => yAxis; set => yAxis = value; }
 
-        private void SetCity(int number, double x, double y)
+        private void SetCity(int number, double y, double x)
         {
             Number = number;
             XAxis = x;

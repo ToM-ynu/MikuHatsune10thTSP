@@ -77,45 +77,87 @@ namespace MikuHatsune10thTSP
             }
 
         }
-        public static int[][] MakeChildren(int[][] population, Pair<int, double>[] fitness, Random[] rand)
+        private static void Mutation2(int[] individual, double randNum, Random rand)
         {
-            var CrossoverRate = 0.7;//Child is 70% its parent
-            var mutationNum = 0.01; //mutation is happen @ 1%
+            ///前から線形にガチャを引いていき、当たったら、隣(i+1と入れ替える)
+
+            for (int i = 0; i < individual.Length; i++)
+            {
+                if (rand.NextDouble() < randNum)
+                {
+                    //入れ替えを実行
+                    //Swap
+                    var temp = individual[i];
+                    if (i + 1 < individual.Length)
+                    {
+                        individual[i] = individual[i + 1];
+                        individual[i + 1] = temp;
+                    }
+                    else
+                    {
+                        individual[i] = individual[0];
+                        individual[0] = temp;
+                    }
+                }
+            }
+
+        }
+        public static void MakeChildren(int[][] population, Pair<int, double>[] fitness, Random[] rand, double crossoverRate, double mutationRate)
+        {
+
             var parents = ChooseParents(fitness, rand[0]);
             var parent1 = new int[population[parents.First].Length];
             population[parents.First].CopyTo(parent1, 0);
             var parent2 = new int[population[parents.Second].Length];
             population[parents.Second].CopyTo(parent2, 0);
-            var ans = new int[20][];
-            //elite保存　2件
-            ans[0] = new int[population[0].Length];
-            ans[population.GetLength(0) / 2] = new int[population[1].Length];
-            for (int i = 0; i < population[0].Length; i++)
+            var emptyQueue = new Queue<int>();
+            for (int i = 0; i < 20; i++)
             {
-
-                ans[0][i] = population[fitness[0].First][i];
-                ans[population.GetLength(0) / 2][i] = population[fitness[1].First][i];
+                if (fitness[0].First != i && fitness[1].First != i)
+                    emptyQueue.Enqueue(i);
             }
+            var syncObject = new Object();
 
-            Parallel.For(1, population.GetLength(0) / 2, i =>
-            {
-                var children = Crossover(parent1, parent2, CrossoverRate, rand[i]);
-                Mutation(children.First, mutationNum, rand[i]);
-                Mutation(children.Second, mutationNum, rand[i]);
-
-                ans[i] = new int[population[0].Length];
-                ans[i + population.GetLength(0) / 2] = new int[population[0].Length];
-                for (int j = 0; j < population[0].Length; j++)
-                {
-                    ans[i][j] = children.First[j];
-                    ans[i + population.GetLength(0) / 2][j] = children.Second[j];
-                }
-            });
             for (int i = 1; i < population.GetLength(0) / 2; i++)
             {
+                int child1, child2;
+                lock (syncObject)
+                {
+                    child1 = emptyQueue.Dequeue();
+                    child2 = emptyQueue.Dequeue();
+                }
+                var children = Crossover(parent1, parent2, crossoverRate, rand[i]);
 
+                Mutation2(children.First, mutationRate, rand[i]);
+                Mutation2(children.Second, mutationRate, rand[i]);
+
+                for (int j = 0; j < population[0].Length; j++)
+                {
+                    population[child1][j] = children.First[j];
+                    population[child2][j] = children.Second[j];
+                }
             }
-            return ans;
+#if false
+            Parallel.For(1, population.GetLength(0) / 2, i =>
+            {
+                int child1, child2;
+                lock (syncObject)
+                {
+                    child1 = emptyQueue.Dequeue();
+                    child2 = emptyQueue.Dequeue();
+                }
+                var children = Crossover(parent1, parent2, crossoverRate, rand[i]);
+
+                Mutation2(children.First, mutationRate, rand[i]);
+                Mutation2(children.Second, mutationRate, rand[i]);
+
+                for (int j = 0; j < population[0].Length; j++)
+                {
+                    population[child1][j] = children.First[j];
+                    population[child2][j] = children.Second[j];
+                }
+            });
+#endif
         }
         private static Pair<int, int> ChooseParents(Pair<int, double>[] fitness, Random rand)
         {
