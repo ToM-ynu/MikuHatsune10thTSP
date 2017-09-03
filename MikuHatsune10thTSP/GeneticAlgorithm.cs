@@ -77,6 +77,31 @@ namespace MikuHatsune10thTSP
             }
 
         }
+        private static void Mutation2(int[] individual, double randNum, Random rand)
+        {
+            ///前から線形にガチャを引いていき、当たったら、隣(i+1と入れ替える)
+
+            for (int i = 0; i < individual.Length; i++)
+            {
+                if (rand.NextDouble() < randNum)
+                {
+                    //入れ替えを実行
+                    //Swap
+                    var temp = individual[i];
+                    if (i + 1 < individual.Length)
+                    {
+                        individual[i] = individual[i + 1];
+                        individual[i + 1] = temp;
+                    }
+                    else
+                    {
+                        individual[i] = individual[0];
+                        individual[0] = temp;
+                    }
+                }
+            }
+
+        }
         public static void MakeChildren(int[][] population, Pair<int, double>[] fitness, Random[] rand, double crossoverRate, double mutationRate)
         {
 
@@ -92,6 +117,27 @@ namespace MikuHatsune10thTSP
                     emptyQueue.Enqueue(i);
             }
             var syncObject = new Object();
+
+            for (int i = 1; i < population.GetLength(0) / 2; i++)
+            {
+                int child1, child2;
+                lock (syncObject)
+                {
+                    child1 = emptyQueue.Dequeue();
+                    child2 = emptyQueue.Dequeue();
+                }
+                var children = Crossover(parent1, parent2, crossoverRate, rand[i]);
+
+                Mutation2(children.First, mutationRate, rand[i]);
+                Mutation2(children.Second, mutationRate, rand[i]);
+
+                for (int j = 0; j < population[0].Length; j++)
+                {
+                    population[child1][j] = children.First[j];
+                    population[child2][j] = children.Second[j];
+                }
+            }
+#if false
             Parallel.For(1, population.GetLength(0) / 2, i =>
             {
                 int child1, child2;
@@ -102,8 +148,8 @@ namespace MikuHatsune10thTSP
                 }
                 var children = Crossover(parent1, parent2, crossoverRate, rand[i]);
 
-                Mutation(children.First, mutationRate, rand[i]);
-                Mutation(children.Second, mutationRate, rand[i]);
+                Mutation2(children.First, mutationRate, rand[i]);
+                Mutation2(children.Second, mutationRate, rand[i]);
 
                 for (int j = 0; j < population[0].Length; j++)
                 {
@@ -111,6 +157,7 @@ namespace MikuHatsune10thTSP
                     population[child2][j] = children.Second[j];
                 }
             });
+#endif
         }
         private static Pair<int, int> ChooseParents(Pair<int, double>[] fitness, Random rand)
         {
