@@ -104,7 +104,7 @@ namespace MikuHatsune10thTSP
         }
         public static void MakeChildren(int[][] population, Pair<int, double>[] fitness, Random[] rand, double crossoverRate, double mutationRate)
         {
-
+            List<int[]> parentsPool = new List<int[]>();
             var parents = ChooseParents(fitness, rand[0]);
             var parent1 = new int[population[parents.First].Length];
             population[parents.First].CopyTo(parent1, 0);
