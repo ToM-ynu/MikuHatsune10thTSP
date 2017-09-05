@@ -10,18 +10,20 @@ namespace MikuHatsune10thTSP
 {
     static class GeneticAlgorithm
     {
-        public static int[][] Initialize(int number, Random rand)
+        public static List<int[]> Initialize(int populationNumber, int cityNumber, Random rand)
         {
-            int[][] data = new int[20][];
-            for (int i = 0; i < data.GetLength(0); i++)
+            var data = new List<int[]>(populationNumber);
+            for (int i = 0; i < populationNumber; i++)
             {
-                data[i] = new int[number];
-                for (int j = 0; j < number; j++)
+
+                var temp = new int[cityNumber];
+                for (int j = 0; j < cityNumber; j++)
                 {
-                    data[i][j] = j + 1;
+                    temp[j] = j + 1;
                 }
 
-                FisherYatesshuffle(data[i], rand);
+                FisherYatesshuffle(temp, rand);
+                data.Add(temp);
             }
             return data;
         }
@@ -102,100 +104,128 @@ namespace MikuHatsune10thTSP
             }
 
         }
-        public static void MakeChildren(int[][] population, Pair<int, double>[] fitness, Random[] rand, double crossoverRate, double mutationRate)
+        public static List<int[]> RunningGA(List<int[]> population, List<Pair<int, double>> fitness, Random[] rand, double crossoverRate, double mutationRate, int cityNumber, CalcFitness calc)
         {
-            List<int[]> parentsPool = new List<int[]>();
-            var parents = ChooseParents(fitness, rand[0]);
-            var parent1 = new int[population[parents.First].Length];
-            population[parents.First].CopyTo(parent1, 0);
-            var parent2 = new int[population[parents.Second].Length];
-            population[parents.Second].CopyTo(parent2, 0);
-            var emptyQueue = new Queue<int>();
-            for (int i = 0; i < 20; i++)
+            //make parents pair pool
+            var parentPoolNumber = 250;
+            var parentsPool = MakeParentsPool(parentPoolNumber, cityNumber, rand[0]);//rand[0] is temp parameter
+            var eliteNumber = 20;
+            var populationNumber = 200;
+            //make new children
+            while (parentsPool.Count != 0)
             {
-                if (fitness[0].First != i && fitness[1].First != i)
-                    emptyQueue.Enqueue(i);
+                Crossover(parentsPool.Dequeue(), population, crossoverRate, rand[0]);
             }
-            var syncObject = new Object();
-#if false
-
-            for (int i = 1; i < population.GetLength(0) / 2; i++)
+            //calc fitness
+            fitness.Clear();
+            foreach (var item in population)
             {
-                int child1, child2;
-                lock (syncObject)
-                {
-                    child1 = emptyQueue.Dequeue();
-                    child2 = emptyQueue.Dequeue();
-                }
-                var children = Crossover(parent1, parent2, crossoverRate, rand[i]);
-
-                Mutation2(children.First, mutationRate, rand[i]);
-                Mutation2(children.Second, mutationRate, rand[i]);
-
-                for (int j = 0; j < population[0].Length; j++)
-                {
-                    population[child1][j] = children.First[j];
-                    population[child2][j] = children.Second[j];
-                }
+                var hoge = fitness.Count;
+                var temp = calc.Calc(item);
+                fitness.Add(new Pair<int, double>(hoge, temp));
             }
-#else
-            Parallel.For(1, population.GetLength(0) / 2, i =>
+            fitness.Sort((a, b) => b.Second.CompareTo(a.Second));
+            //数件をelite保存して、下をルーレット選択する
+            var nextGenerationList = new List<int>();
+            for (int i = 0; i < eliteNumber; i++)
             {
-                int child1, child2;
-                lock (syncObject)
-                {
-                    child1 = emptyQueue.Dequeue();
-                    child2 = emptyQueue.Dequeue();
-                }
-                var children = Crossover(parent1, parent2, crossoverRate, rand[i]);
+                nextGenerationList.Add(fitness[i].First);
+            }
+            //ルーレット選択
+            nextGenerationList.AddRange(RouletteWheelSelection(fitness, rand[0], eliteNumber, populationNumber));
+            var newPopulation = new List<int[]>();
+            for (int i = 0; i < nextGenerationList.Count; i++)
+            {
+                var temp = new int[cityNumber];
+                population[nextGenerationList[i]].CopyTo(temp, 0);
+                newPopulation.Add(temp);
+            }
+            //debug code
+            fitness.Clear();
+            foreach (var item in newPopulation)
+            {
+                var hoge = fitness.Count;
+                var temp = calc.Calc(item);
+                fitness.Add(new Pair<int, double>(hoge, temp));
+            }
+            fitness.Sort((a, b) => b.Second.CompareTo(a.Second));
+            return newPopulation;
 
-                Mutation2(children.First, mutationRate, rand[i]);
-                Mutation2(children.Second, mutationRate, rand[i]);
-
-                for (int j = 0; j < population[0].Length; j++)
-                {
-                    population[child1][j] = children.First[j];
-                    population[child2][j] = children.Second[j];
-                }
-            });
-#endif
         }
-        private static Pair<int, int> ChooseParents(Pair<int, double>[] fitness, Random rand)
+
+        private static void Crossover(Pair<int, int> pair, List<int[]> population, double crossoverRate, Random random)
         {
+            int crossoverNum = (int)(crossoverRate * population[pair.First].Length);
+            var crossoverPoints = new List<int>(population[pair.First].Length);
+            for (int i = 0; i < population[pair.First].Length; i++)
+            {
+                crossoverPoints.Add(i + 1);
+            }
+            FisherYatesshuffle(crossoverPoints, random);
+            crossoverPoints.RemoveRange(crossoverNum, crossoverPoints.Count - crossoverNum);
+            var parent1ExchangeIndex = new List<int>();
+            var parent2ExchangeIndex = new List<int>();
+            foreach (var item in crossoverPoints)
+            {
+                //ぐぇ…こ↑こ↓ O(n^2)でやめたくなりますよ～
+                parent1ExchangeIndex.Add(Array.IndexOf(population[pair.First], item));
+                parent2ExchangeIndex.Add(Array.IndexOf(population[pair.Second], item));
+            }
+            parent1ExchangeIndex.Sort();
+            parent2ExchangeIndex.Sort();
+            var child1 = new int[population[pair.First].Length];
+            var child2 = new int[population[pair.First].Length];
+            population[pair.First].CopyTo(child1, 0);
+            population[pair.Second].CopyTo(child2, 0);
+            //Mutation
+            Mutation2(child1, 0.005, random);
+            Mutation2(child2, 0.005, random);
+            population.Add(child1);
+            population.Add(child2);
+        }
+
+        private static Queue<Pair<int, int>> MakeParentsPool(int parentsPairNumber, int cityNumber, Random rand)
+        {
+            var pool = new Queue<Pair<int, int>>();
+            int parent1, parent2;
+            for (int i = 0; i < parentsPairNumber; i++)
+            {
+                parent1 = rand.Next(cityNumber);
+                do
+                {
+                    parent2 = rand.Next(cityNumber);
+                } while (parent1 == parent2);
+                // choose 2 integer  parent1 != parent2 && 0<= parent1,parent2<=(populationNumber-1)
+                pool.Enqueue(new Pair<int, int>(parent1, parent2));
+            }
+            return pool;
+        }
+        private static List<int> RouletteWheelSelection(List<Pair<int, double>> fitness, Random rand, int eliteNumber, int populationNumber)
+        {
+            var ans = new List<int>();
             var cumlativeSum = new List<double>();
-            int parent1 = 20, parent2 = 20;
-            foreach (var item in fitness)
+            for (int i = 0; i < populationNumber; i++)
             {
-                if (cumlativeSum.Count != 0)
-                    cumlativeSum.Add(cumlativeSum.Last() + item.Second);
+                if (i < 20)
+                    cumlativeSum.Add(0);
+                else if (cumlativeSum.Count != 0)
+                    cumlativeSum.Add(cumlativeSum.Last() + fitness[i].Second);
                 else
-                    cumlativeSum.Add(item.Second);
+                    cumlativeSum.Add(fitness[i].Second);
             }
-
-            var randNum = rand.NextDouble();
-            for (int i = 0; i < fitness.Length; i++)
+            while (ans.Count < (populationNumber - eliteNumber))
             {
-                if (randNum < ((cumlativeSum[i]) / cumlativeSum.Last()))
+                var randNum = rand.NextDouble();
+                for (int i = 0; i < cumlativeSum.Count; i++)
                 {
-                    parent1 = i;
-                    break;
-                }
-            }
-
-            for (int i = 0; i < 10; i++)
-            {
-                randNum = rand.NextDouble();
-                for (int j = 0; j < fitness.Length; j++)
-                {
-                    if (randNum < ((cumlativeSum[j]) / cumlativeSum.Last()))
+                    if (randNum < ((cumlativeSum[i]) / cumlativeSum.Last()))
                     {
-                        parent2 = j;
+                        ans.Add(i);
                         break;
                     }
                 }
-                if (parent1 != parent2) break;
             }
-            return new Pair<int, int>(parent1, parent2);
+            return ans;
         }
         public static List<int> MakIndividual(int number)
         {

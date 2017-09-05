@@ -13,16 +13,15 @@ namespace MikuHatsune10thTSP
             if (args.Length != 0) filename = args[0];
             var data = Read(filename);
             //load finish 
-            const int individualNumber = 20;
+            const int populationNumber = 200;
+            const int cityNumber = 194;
             //make population population has 20 individuals.
 
-            var fitness = new Pair<int, double>[individualNumber];
-            for (int i = 0; i < fitness.Length; i++)
-            {
-                fitness[i] = new Pair<int, double>();
-            }
+            var fitness = new List<Pair<int, double>>();
             Random rand = new Random();
-            var population = GeneticAlgorithm.Initialize(data.Count, rand);
+            var population = GeneticAlgorithm.Initialize(populationNumber, cityNumber, rand);
+
+
             Random[] paraRandom = new Random[10];
             var temp = Environment.TickCount;
             for (int i = 0; i < paraRandom.Length; i++)
@@ -32,18 +31,24 @@ namespace MikuHatsune10thTSP
 
             var draw = new Draw(data);
             draw.DrawMap(data, population[0]);
-            var crossoverRate = 0.4;//Child is 70% its parent
+            var crossoverRate = 0.7;//Child is 70% its parent
             var mutationNum = 0.05; //mutation is happen @ 1%
-
+            CalcFitness calc = new CalcFitness(data);
+            for (int i = 0; i < population.Count; i++)
+            {
+                fitness.Add(new Pair<int, double>(i, calc.Calc(population[i])));
+            }
             for (int i = 0; i < 1_000_000; i++)
             {
-                CalcFitness.Calc(fitness, population, data);
-                GeneticAlgorithm.MakeChildren(population, fitness, paraRandom, crossoverRate, mutationNum);
+                population = GeneticAlgorithm.RunningGA(population, fitness, paraRandom, crossoverRate, mutationNum, cityNumber, calc);
+  
                 if (i % 1_000 == 0)
                 {
-                    for (int j = 0; j < fitness.Length / 3; j++)
+
+                    for (int j = 0; j < fitness.Count; j++)
                     {
-                        Console.Write("{0}:{1:e2}\t", fitness[j].First, fitness[j].Second);
+                        if (j % 40 == 0)
+                            Console.Write("{0}:{1:e3}\t", fitness[j].First, fitness[j].Second);
                     }
                     Console.WriteLine();
                 }
