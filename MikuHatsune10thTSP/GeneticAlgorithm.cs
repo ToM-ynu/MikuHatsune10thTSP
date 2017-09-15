@@ -88,22 +88,16 @@ namespace MikuHatsune10thTSP
             }
             //ルーレット選択
             nextGenerationList.AddRange(RouletteWheelSelection(fitness, rand[0], eliteNumber, populationNumber));
-            {
-                var debug = (int[])nextGenerationList.ToArray().Clone();
-                Array.Sort(debug);
-            }
-            var newPopulation = new List<int[]>();
+            fitness.Sort((a, b) => a.First.CompareTo(b.First));
+            nextGenerationList.Sort();
             for (int i = 0; i < nextGenerationList.Count; i++)
             {
-                newPopulation.Add((int[])population[nextGenerationList[i]].Clone());
+                population[i] = (int[])population[nextGenerationList[i]].Clone();
             }
-            fitness.Clear();
-            for (int i = 0; i < newPopulation.Count; i++)
-            {
-                fitness.Add(new Pair<int, double>(i, calc.Calc(newPopulation[i])));
-            }
+            fitness.RemoveRange(nextGenerationList.Count, population.Count - nextGenerationList.Count);
+            population.RemoveRange(nextGenerationList.Count, population.Count - nextGenerationList.Count);
             fitness.Sort((a, b) => b.Second.CompareTo(a.Second));
-            return newPopulation;
+            return population;
 
         }
 

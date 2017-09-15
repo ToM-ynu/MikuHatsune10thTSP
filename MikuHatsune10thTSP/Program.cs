@@ -30,7 +30,7 @@ namespace MikuHatsune10thTSP
             }
 
             var draw = new Draw(data);
-            draw.DrawMap(data, population[0]);
+            //draw.DrawMap(data, population[0]);
             var crossoverRate = 0.7;//Child is 70% its parent
             var mutationNum = 0.05; //mutation is happen @ 1%
             CalcFitness calc = new CalcFitness(data);
@@ -52,7 +52,7 @@ namespace MikuHatsune10thTSP
                     }
                     Console.WriteLine();
                 }
-                if (i % 100_000 == 0)
+                if (i % 1_000*10 == 0)
                 {
                     draw.DrawMap(data, population[0]);
                 }
