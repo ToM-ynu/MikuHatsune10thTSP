@@ -9,19 +9,19 @@ namespace MikuHatsune10thTSP
         static void Main(string[] args)
         {
             //load data
-            var filename = "qa194.tsp";
+            var filename = "dj38.tsp";
             if (args.Length != 0) filename = args[0];
             var data = Read(filename);
             //load finish 
             const int populationNumber = 200;
             const int maxPopulationNumber = 700;
-            const int cityNumber = 194;
+
             //make population population has 20 individuals.
 
             var fitness = new(int, double)[maxPopulationNumber];
             Random rand = new Random();
-            var population = new int[maxPopulationNumber][];
-            GeneticAlgorithm.Initialize(population, cityNumber, rand);
+            var population = new int[2][][];
+            GeneticAlgorithm.Initialize(population, data.Count, maxPopulationNumber, rand);
             var temp = Environment.TickCount;
             Random[] paraRandom = new Random[Environment.ProcessorCount];
             for (int i = 0; i < paraRandom.Length; i++)
@@ -36,11 +36,11 @@ namespace MikuHatsune10thTSP
             CalcFitness calc = new CalcFitness(data);
             for (int i = 0; i < population.GetLength(0); i++)
             {
-                fitness[i] = (i, calc.Calc(population[i]));
+                fitness[i] = (i, calc.Calc(population[0][i]));
             }
             for (int i = 0; i < 1_000_000; i++)
             {
-                population = GeneticAlgorithm.RunningGA(population, fitness, paraRandom, crossoverRate, mutationNum, cityNumber, calc);
+                GeneticAlgorithm.RunningGA(population, fitness, paraRandom, crossoverRate, mutationNum, data.Count, calc);
 
                 if (i % 1_000 == 0)
                 {
@@ -54,7 +54,7 @@ namespace MikuHatsune10thTSP
                 }
                 if (i % 1_000 * 10 == 0)
                 {
-                    draw.DrawMap(data, population[0]);
+                    draw.DrawMap(data, population[0][0]);
                 }
             }
 
