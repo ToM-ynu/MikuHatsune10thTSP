@@ -7,7 +7,7 @@ namespace MikuHatsune10thTSP
 
     public class CalcFitness
     {
-        const double optimal = 9352;
+        const double optimal = 6656;
         List<City> data;
         public CalcFitness(List<City> data)
         {

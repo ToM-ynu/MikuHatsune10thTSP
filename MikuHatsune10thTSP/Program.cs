@@ -9,21 +9,21 @@ namespace MikuHatsune10thTSP
         static void Main(string[] args)
         {
             //load data
-            var filename = "qa194.tsp";
+            var filename = "dj38.tsp";
             if (args.Length != 0) filename = args[0];
             var data = Read(filename);
             //load finish 
             const int populationNumber = 200;
-            const int cityNumber = 194;
+            const int maxPopulationNumber = 700;
+
             //make population population has 20 individuals.
 
-            var fitness = new List<Pair<int, double>>();
+            var fitness = new(int, double)[maxPopulationNumber];
             Random rand = new Random();
-            var population = GeneticAlgorithm.Initialize(populationNumber, cityNumber, rand);
-
-
-            Random[] paraRandom = new Random[10];
+            var population = new int[2][][];
+            GeneticAlgorithm.Initialize(population, data.Count, maxPopulationNumber, rand);
             var temp = Environment.TickCount;
+            Random[] paraRandom = new Random[Environment.ProcessorCount];
             for (int i = 0; i < paraRandom.Length; i++)
             {
                 paraRandom[i] = new Random(temp++);
@@ -34,27 +34,27 @@ namespace MikuHatsune10thTSP
             var crossoverRate = 0.7;//Child is 70% its parent
             var mutationNum = 0.05; //mutation is happen @ 1%
             CalcFitness calc = new CalcFitness(data);
-            for (int i = 0; i < population.Count; i++)
+            for (int i = 0; i < population.GetLength(0); i++)
             {
-                fitness.Add(new Pair<int, double>(i, calc.Calc(population[i])));
+                fitness[i] = (i, calc.Calc(population[0][i]));
             }
             for (int i = 0; i < 1_000_000; i++)
             {
-                population = GeneticAlgorithm.RunningGA(population, fitness, paraRandom, crossoverRate, mutationNum, cityNumber, calc);
-  
+                GeneticAlgorithm.RunningGA(population, fitness, paraRandom, crossoverRate, mutationNum, data.Count, calc);
+
                 if (i % 1_000 == 0)
                 {
 
-                    for (int j = 0; j < fitness.Count; j++)
+                    for (int j = 0; j < populationNumber; j++)
                     {
                         if (j % 40 == 0)
-                            Console.Write("{0}:{1:e3}\t", fitness[j].First, fitness[j].Second);
+                            Console.Write("{0}:{1:e3}\t", fitness[j].Item1, fitness[j].Item2);
                     }
                     Console.WriteLine();
                 }
-                if (i % 1_000*10 == 0)
+                if (i % 1_000 * 10 == 0)
                 {
-                    draw.DrawMap(data, population[0]);
+                    draw.DrawMap(data, population[0][0]);
                 }
             }
 
@@ -69,17 +69,10 @@ namespace MikuHatsune10thTSP
             using (StreamReader reader = new StreamReader(fileStream))
             {
                 string temp;
-
-                for (int i = 0; i < 7; i++)
-                {
-                    reader.ReadLine();
-                }
-                while (true)
+                while (reader.Peek() > -1)
                 {
                     temp = reader.ReadLine();
-                    if (temp == "EOF") break;
-                    var city = new City(temp);
-                    dataSet.Add(city);
+                    dataSet.Add(new City(temp));
                 }
             }
             return dataSet;
