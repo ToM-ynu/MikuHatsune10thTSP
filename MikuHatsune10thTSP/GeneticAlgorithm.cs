@@ -10,22 +10,19 @@ namespace MikuHatsune10thTSP
 {
     static class GeneticAlgorithm
     {
-        public static List<int[]> Initialize(int populationNumber, int cityNumber, Random rand)
+        public static void Initialize(int[][] population, int cityNumber, Random rand)
         {
-            var data = new List<int[]>(populationNumber);
-            for (int i = 0; i < populationNumber; i++)
+            for (int i = 0; i < population.GetLength(0); i++)
             {
-
                 var temp = new int[cityNumber];
+
                 for (int j = 0; j < cityNumber; j++)
                 {
                     temp[j] = j + 1;
                 }
-
                 FisherYatesshuffle(temp, rand);
-                data.Add(temp);
+                population[i] = temp;
             }
-            return data;
         }
         private static void Invart(int[] individual, (int, int) section)
         {
@@ -55,48 +52,46 @@ namespace MikuHatsune10thTSP
                 }
             }
         }
-        public static List<int[]> RunningGA(List<int[]> population, List<Pair<int, double>> fitness, Random[] rand, double crossoverRate, double mutationRate, int cityNumber, CalcFitness calc)
+        public static int[][] RunningGA(int[][] population, (int, double)[] fitness, Random[] rand, double crossoverRate, double mutationRate, int cityNumber, CalcFitness calc)
         {
             //make parents pair pool
-            var parentPoolNumber = 250;
+
+            const int eliteNumber = 20;
+            const int populationNumber = 200;
+            const int parentPoolNumber = 250;
             var parentsPool = MakeParentsPool(parentPoolNumber, cityNumber, rand[0]);//rand[0] is temp parameter
-            var eliteNumber = 20;
-            var populationNumber = 200;
+
             //make new children
-            while (parentsPool.Count != 0)
+            for (int i = 0; parentsPool.Count > 0; i += 2)
             {
                 var temp = parentsPool.Dequeue();
                 var cutPoint = (int)(194 * (0.3 + 0.4 * rand[0].NextDouble()));
                 var children = Crossover((population[temp.Item1], population[temp.Item2]), cutPoint, rand[0]);
                 Mutation(children.Item1, 0.05, rand[0]);
                 Mutation(children.Item2, 0.05, rand[0]);
-                population.Add(children.Item1);
-                population.Add(children.Item2);
+                population[i] = (children.Item1);
+                population[i + 1] = (children.Item2);
             }
-            //calc fitness
-            fitness.Clear();
-            for (int i = 0; i < population.Count; i++)
+
+            for (int i = populationNumber; i < population.GetLength(0); i++)
             {
-                fitness.Add(new Pair<int, double>(i, calc.Calc(population[i])));
+                fitness[i] = (i, calc.Calc(population[i]));
             }
-            fitness.Sort((a, b) => b.Second.CompareTo(a.Second));
+            //評価値が良い順番に並べる
+            Array.Sort(fitness, (a, b) => b.Item2.CompareTo(a.Item2));
             //数件をelite保存して、下をルーレット選択する
             var nextGenerationList = new List<int>();
             for (int i = 0; i < eliteNumber; i++)
             {
-                nextGenerationList.Add(fitness[i].First);
+                nextGenerationList.Add(fitness[i].Item1);
             }
             //ルーレット選択
             nextGenerationList.AddRange(RouletteWheelSelection(fitness, rand[0], eliteNumber, populationNumber));
-            fitness.Sort((a, b) => a.First.CompareTo(b.First));
             nextGenerationList.Sort();
             for (int i = 0; i < nextGenerationList.Count; i++)
             {
                 population[i] = (int[])population[nextGenerationList[i]].Clone();
             }
-            fitness.RemoveRange(nextGenerationList.Count, population.Count - nextGenerationList.Count);
-            population.RemoveRange(nextGenerationList.Count, population.Count - nextGenerationList.Count);
-            fitness.Sort((a, b) => b.Second.CompareTo(a.Second));
             return population;
 
         }
@@ -156,32 +151,28 @@ namespace MikuHatsune10thTSP
             }
             return pool;
         }
-        private static List<int> RouletteWheelSelection(List<Pair<int, double>> fitness, Random rand, int eliteNumber, int populationNumber)
+        private static List<int> RouletteWheelSelection((int, double)[] fitness, Random rand, int eliteNumber, int populationNumber)
         {
             var ans = new List<int>();
             var cumlativeSum = new List<double>();
             for (int i = 0; i < populationNumber; i++)
             {
-                if (i < 20)
+                if (i < eliteNumber)//エリート保存
                     cumlativeSum.Add(0);
+
                 else if (cumlativeSum.Count != 0)
-                    cumlativeSum.Add(cumlativeSum.Last() + fitness[i].Second);
+                    cumlativeSum.Add(cumlativeSum.Last() + fitness[i].Item2);
                 else
-                    cumlativeSum.Add(fitness[i].Second);
+                    cumlativeSum.Add(fitness[i].Item2);
             }
             while (ans.Count < (populationNumber - eliteNumber))
             {
-                BREAK:
                 var randNum = rand.NextDouble();
                 for (int i = 0; i < cumlativeSum.Count; i++)
                 {
                     if (randNum < ((cumlativeSum[i]) / cumlativeSum.Last()))
                     {
-                        foreach (var item in ans)
-                        {
-                            if (fitness[i].First == item) goto BREAK;
-                        }
-                        ans.Add(fitness[i].First);
+                        ans.Add(fitness[i].Item1);
                         break;
                     }
                 }
